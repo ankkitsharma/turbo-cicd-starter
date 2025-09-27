@@ -103,11 +103,12 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest
 
             # Update docker-compose.yml with latest Web image
-            awk '
+            WEB_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest"
+            awk -v image="$WEB_IMAGE" '
             /^  web:/ { in_web = 1; print; next }
             /^  [a-z]/ && in_web { in_web = 0 }
             in_web && /^    build:/ { 
-              print "    image: '"${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest"'"
+              print "    image: " image
               next
             }
             in_web && /^      context:/ { next }

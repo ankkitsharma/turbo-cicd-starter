@@ -103,11 +103,12 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest
 
             # Update docker-compose.yml with latest API image
-            awk '
+            API_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest"
+            awk -v image="$API_IMAGE" '
             /^  api:/ { in_api = 1; print; next }
             /^  [a-z]/ && in_api { in_api = 0 }
             in_api && /^    build:/ { 
-              print "    image: '"${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest"'"
+              print "    image: " image
               next
             }
             in_api && /^      context:/ { next }
