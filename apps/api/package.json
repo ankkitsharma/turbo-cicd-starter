@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.ts",
+    "start": "node dist/index.js",
     "test": "echo 'Add test script here'",
     "lint": "echo 'Add lint script here'"
   },
