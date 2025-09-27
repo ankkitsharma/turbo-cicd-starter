@@ -145,14 +145,14 @@ VITE_API_URL=http://localhost:3001
 For production-specific configurations, create `docker-compose.override.yml`:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   api:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
-  
+
   web:
     environment:
       - NODE_ENV=production
@@ -233,7 +233,7 @@ services:
   api:
     deploy:
       replicas: 3
-  
+
   web:
     deploy:
       replicas: 2
@@ -246,6 +246,7 @@ Use Nginx or Traefik for load balancing multiple instances.
 ## Support
 
 For issues or questions:
+
 1. Check the logs first
 2. Verify configuration
 3. Test locally with Docker Compose

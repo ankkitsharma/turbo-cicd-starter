@@ -18,5 +18,5 @@ src
 vite.config.ts
 tsconfig.json
 postcss.config.mjs
-prettier.config.js
+../../prettier.config.js
 components.json
