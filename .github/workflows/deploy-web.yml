@@ -103,8 +103,17 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest
 
             # Update docker-compose.yml with latest Web image
-            sed -i "s|build:|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest|g" docker-compose.yml
-            sed -i "s|dockerfile: apps/web/Dockerfile||g" docker-compose.yml
+            awk '
+            /^  web:/ { in_web = 1; print; next }
+            /^  [a-z]/ && in_web { in_web = 0 }
+            in_web && /^    build:/ { 
+              print "    image: '"${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest"'"
+              next
+            }
+            in_web && /^      context:/ { next }
+            in_web && /^      dockerfile:/ { next }
+            { print }
+            ' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
 
             # Restart only Web service
             docker compose up -d --no-deps web

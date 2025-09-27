@@ -10,7 +10,7 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - 'turbo.json'
-      - '.git/workflows/deploy-api.yml'
+      - '.github/workflows/deploy-api.yml'
   pull_request:
     branches: [ main, master ]
     paths:
@@ -103,8 +103,17 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest
 
             # Update docker-compose.yml with latest API image
-            sed -i "s|build:|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest|g" docker-compose.yml
-            sed -i "s|dockerfile: apps/api/Dockerfile||g" docker-compose.yml
+            awk '
+            /^  api:/ { in_api = 1; print; next }
+            /^  [a-z]/ && in_api { in_api = 0 }
+            in_api && /^    build:/ { 
+              print "    image: '"${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest"'"
+              next
+            }
+            in_api && /^      context:/ { next }
+            in_api && /^      dockerfile:/ { next }
+            { print }
+            ' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
 
             # Restart only API service
             docker compose up -d --no-deps api
