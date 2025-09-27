@@ -7,7 +7,6 @@
     <list default="true" id="c019bcd6-6d9f-48d5-88ea-69a08d2de195" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/api/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/Dockerfile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +94,7 @@
       <workItem from="1758950191187" duration="5489000" />
       <workItem from="1758956184344" duration="4616000" />
       <workItem from="1758969929221" duration="974000" />
-      <workItem from="1758970916135" duration="1393000" />
+      <workItem from="1758970916135" duration="2290000" />
     </task>
     <servers />
   </component>

@@ -17,9 +17,10 @@ COPY packages/ ./packages/
 # Copy API app package.json
 COPY apps/api/package.json ./apps/api/
 
+# Disable Husky in Docker
 ENV HUSKY=0
 
-# Install dependencies
+# Install dependencies (full for build)
 RUN pnpm install --frozen-lockfile
 
 # Build stage
@@ -50,6 +51,9 @@ COPY packages/ ./packages/
 
 # Copy API app package.json
 COPY apps/api/package.json ./apps/api/
+
+# Disable Husky in production as well
+ENV HUSKY=0
 
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
