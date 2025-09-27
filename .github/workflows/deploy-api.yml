@@ -10,6 +10,7 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - 'turbo.json'
+      - '.git/workflows/deploy-api.yml'
   pull_request:
     branches: [ main, master ]
     paths:
@@ -32,74 +33,81 @@ jobs:
       packages: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata for API
-      id: meta-api
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
+      - name: Extract metadata for API
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push API image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./apps/api/Dockerfile
-        push: true
-        tags: ${{ steps.meta-api.outputs.tags }}
-        labels: ${{ steps.meta-api.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
     environment: turbo-cicd-vps
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
+
     steps:
-    - name: Deploy API to VPS
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USERNAME }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        port: ${{ secrets.VPS_PORT }}
-        script: |
-          # Navigate to project directory
-          cd /opt/turbo-ci-starter || { echo "Directory not found, creating..."; sudo mkdir -p /opt/turbo-ci-starter; sudo chown $USER:$USER /opt/turbo-ci-starter; cd /opt/turbo-ci-starter; }
-          
-          # Pull latest changes
-          git pull origin main || git clone https://github.com/${{ github.repository }}.git .
-          
-          # Login to GitHub Container Registry
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          # Pull latest API image
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest
-          
-          # Update docker-compose.yml with latest API image
-          sed -i "s|build:|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest|g" docker-compose.yml
-          sed -i "s|dockerfile: apps/api/Dockerfile||g" docker-compose.yml
-          
-          # Restart only API service
-          docker-compose up -d --no-deps api
-          
-          # Clean up unused images
-          docker image prune -f
+      - name: Deploy API to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+
+            # Navigate to project directory (no sudo)
+            mkdir -p ~/turbo-ci-starter
+            cd ~/turbo-ci-starter
+
+            # Pull latest repo changes or clone if not exists
+            if [ ! -d .git ]; then
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              git pull origin main
+            fi
+
+            # Login to GitHub Container Registry
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull latest API image
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest
+
+            # Update docker-compose.yml with latest API image
+            sed -i "s|build:|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest|g" docker-compose.yml
+            sed -i "s|dockerfile: apps/api/Dockerfile||g" docker-compose.yml
+
+            # Restart only API service
+            docker compose up -d --no-deps api
+
+            # Clean up unused images
+            docker image prune -f
