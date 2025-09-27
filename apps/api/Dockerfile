@@ -17,6 +17,8 @@ COPY packages/ ./packages/
 # Copy API app package.json
 COPY apps/api/package.json ./apps/api/
 
+ENV HUSKY=0
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
