@@ -102,22 +102,50 @@ jobs:
             # Pull latest API image
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest
 
+            # Reset docker-compose.yml to original state from git
+            git checkout HEAD -- docker-compose.yml
+
             # Update docker-compose.yml with latest API image
             API_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest"
             awk -v image="$API_IMAGE" '
-            /^  api:/ { in_api = 1; print; next }
-            /^  [a-z]/ && in_api { in_api = 0 }
+            /^  api:/ { 
+              in_api = 1; 
+              print; 
+              next 
+            }
+            /^  [a-z]/ && in_api { 
+              in_api = 0 
+            }
             in_api && /^    build:/ { 
               print "    image: " image
               next
             }
-            in_api && /^      context:/ { next }
-            in_api && /^      dockerfile:/ { next }
-            { print }
+            in_api && /^      context:/ { 
+              next 
+            }
+            in_api && /^      dockerfile:/ { 
+              next 
+            }
+            in_api && /^    image:/ { 
+              print "    image: " image
+              next
+            }
+            { 
+              print 
+            }
             ' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
 
-            # Restart only API service
+            # Show the modified docker-compose.yml for debugging
+            echo "Modified docker-compose.yml:"
+            cat docker-compose.yml
+
+            # Restart API service
             docker compose up -d --no-deps api
+
+            # Verify API service is running with correct image
+            echo "API service status:"
+            docker compose ps api
+            docker inspect $(docker compose ps -q api) | grep -A 5 -B 5 "Image"
 
             # Clean up unused images
             docker image prune -f

@@ -102,22 +102,50 @@ jobs:
             # Pull latest Web image
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest
 
+            # Reset docker-compose.yml to original state from git
+            git checkout HEAD -- docker-compose.yml
+
             # Update docker-compose.yml with latest Web image
             WEB_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest"
             awk -v image="$WEB_IMAGE" '
-            /^  web:/ { in_web = 1; print; next }
-            /^  [a-z]/ && in_web { in_web = 0 }
+            /^  web:/ { 
+              in_web = 1; 
+              print; 
+              next 
+            }
+            /^  [a-z]/ && in_web { 
+              in_web = 0 
+            }
             in_web && /^    build:/ { 
               print "    image: " image
               next
             }
-            in_web && /^      context:/ { next }
-            in_web && /^      dockerfile:/ { next }
-            { print }
+            in_web && /^      context:/ { 
+              next 
+            }
+            in_web && /^      dockerfile:/ { 
+              next 
+            }
+            in_web && /^    image:/ { 
+              print "    image: " image
+              next
+            }
+            { 
+              print 
+            }
             ' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
 
-            # Restart only Web service
+            # Show the modified docker-compose.yml for debugging
+            echo "Modified docker-compose.yml:"
+            cat docker-compose.yml
+
+            # Restart Web service
             docker compose up -d --no-deps web
+
+            # Verify Web service is running with correct image
+            echo "Web service status:"
+            docker compose ps web
+            docker inspect $(docker compose ps -q web) | grep -A 5 -B 5 "Image"
 
             # Clean up unused images
             docker image prune -f
