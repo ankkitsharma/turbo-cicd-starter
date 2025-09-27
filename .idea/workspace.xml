@@ -5,9 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c019bcd6-6d9f-48d5-88ea-69a08d2de195" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/deploy-api.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/deploy-api.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/deploy-web.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/deploy-web.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/App.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +63,7 @@
       <workItem from="1758708497141" duration="234000" />
       <workItem from="1758799443829" duration="713000" />
       <workItem from="1758950191187" duration="5489000" />
-      <workItem from="1758956184344" duration="918000" />
+      <workItem from="1758956184344" duration="1102000" />
     </task>
     <servers />
   </component>

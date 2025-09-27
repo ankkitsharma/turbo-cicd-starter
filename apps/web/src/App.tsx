@@ -33,7 +33,7 @@ function App() {
     // </div>
       <div className="bg-amber-700">
           <div>hello</div>
-          <Button variant={"secondary"}>A button</Button>
+          <Button variant={"secondary"}>A buton</Button>
       </div>
   )
 }
