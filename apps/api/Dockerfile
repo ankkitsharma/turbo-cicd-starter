@@ -55,8 +55,8 @@ COPY apps/api/package.json ./apps/api/
 # Disable Husky in production as well
 ENV HUSKY=0
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Install production dependencies only (skip prepare script)
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Copy built application from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
